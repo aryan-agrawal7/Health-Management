@@ -254,5 +254,45 @@
     "roomId": "5",
     "details": "Patient discharged. Reason: cured",
     "timestamp": "2025-04-10T10:01:04.204Z"
+  },
+  {
+    "id": 33,
+    "action": "add",
+    "patientName": "sdsd",
+    "roomId": "10",
+    "details": "Admitted with asdasd",
+    "timestamp": "2025-04-18T08:45:09.171Z"
+  },
+  {
+    "id": 34,
+    "action": "discharge",
+    "patientName": "naman",
+    "roomId": "6",
+    "details": "Patient discharged. Reason: cured",
+    "timestamp": "2025-04-18T09:20:47.782Z"
+  },
+  {
+    "id": 35,
+    "action": "discharge",
+    "patientName": "sdsd",
+    "roomId": "10",
+    "details": "Patient discharged. Reason: deceased",
+    "timestamp": "2025-04-18T09:20:56.323Z"
+  },
+  {
+    "id": 36,
+    "action": "add",
+    "patientName": "Aryan Agrawal",
+    "roomId": "2",
+    "details": "Admitted with ds",
+    "timestamp": "2025-04-18T09:26:07.759Z"
+  },
+  {
+    "id": 37,
+    "action": "add",
+    "patientName": "Aryan Agrawal",
+    "roomId": "3",
+    "details": "Admitted with ds",
+    "timestamp": "2025-04-18T09:26:26.400Z"
   }
 ]

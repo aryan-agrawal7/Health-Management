@@ -106,6 +106,45 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
+    function updateVitalDisplay(element, value, type) {
+      element.textContent = value;
+      element.classList.add('updated');
+      
+      // Remove any existing status classes
+      element.classList.remove('normal', 'warning', 'critical');
+      
+      // Add appropriate status class based on value
+      if (type === 'heartRate') {
+        if (value < 60 || value > 100) {
+          element.classList.add('critical');
+        } else if (value < 65 || value > 95) {
+          element.classList.add('warning');
+        } else {
+          element.classList.add('normal');
+        }
+      } else if (type === 'spo2') {
+        if (value < 95) {
+          element.classList.add('critical');
+        } else if (value < 97) {
+          element.classList.add('warning');
+        } else {
+          element.classList.add('normal');
+        }
+      } else if (type === 'temperature') {
+        if (value > 37.5) {
+          element.classList.add('critical');
+        } else if (value > 37.2) {
+          element.classList.add('warning');
+        } else {
+          element.classList.add('normal');
+        }
+      }
+      
+      setTimeout(() => {
+        element.classList.remove('updated');
+      }, 500);
+    }
+    
     function fetchData() {
       console.log(`Fetching data for room ${roomId}...`);
       fetch(`/api/room/${roomId}`)
@@ -116,17 +155,16 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
           console.log('Received vital data:', data);
           if (data.currentVitals) {
-            heartRateEl.textContent = data.currentVitals.heartRate.toFixed(0);
-            spo2El.textContent = data.currentVitals.spo2.toFixed(0);
-            temperatureEl.textContent = data.currentVitals.temperature.toFixed(1);
-            heartRateEl.classList.add('updated');
-            spo2El.classList.add('updated');
-            temperatureEl.classList.add('updated');
-            setTimeout(() => {
-              heartRateEl.classList.remove('updated');
-              spo2El.classList.remove('updated');
-              temperatureEl.classList.remove('updated');
-            }, 500);
+            const heartRate = data.currentVitals.heartRate ? 
+              data.currentVitals.heartRate.toFixed(0) : '--';
+            const spo2 = data.currentVitals.spo2 ? 
+              data.currentVitals.spo2.toFixed(0) : '--';
+            const temp = data.currentVitals.temperature ? 
+              data.currentVitals.temperature.toFixed(1) : '--';
+            
+            updateVitalDisplay(heartRateEl, heartRate, 'heartRate');
+            updateVitalDisplay(spo2El, spo2, 'spo2');
+            updateVitalDisplay(temperatureEl, temp, 'temperature');
           } else {
             console.warn('No current vitals data received');
           }
@@ -139,17 +177,27 @@ document.addEventListener('DOMContentLoaded', function() {
           tempChart.data.labels = [];
           tempChart.data.datasets[0].data = [];
           
+          // Skip adding points with zero values to charts
           if (data.historicalData && data.historicalData.length > 0) {
             data.historicalData.forEach((vital, index) => {
-              // Use sequential labels since no timestamp is provided
               const label = `#${index + 1}`;
-              heartRateChart.data.labels.push(label);
-              heartRateChart.data.datasets[0].data.push(vital.heartRate);
-              spo2Chart.data.labels.push(label);
-              spo2Chart.data.datasets[0].data.push(vital.spo2);
-              tempChart.data.labels.push(label);
-              tempChart.data.datasets[0].data.push(vital.temperature);
+              
+              if (vital.heartRate) {
+                heartRateChart.data.labels.push(label);
+                heartRateChart.data.datasets[0].data.push(vital.heartRate);
+              }
+              
+              if (vital.spo2) {
+                spo2Chart.data.labels.push(label);
+                spo2Chart.data.datasets[0].data.push(vital.spo2);
+              }
+              
+              if (vital.temperature) {
+                tempChart.data.labels.push(label);
+                tempChart.data.datasets[0].data.push(vital.temperature);
+              }
             });
+            
             heartRateChart.update();
             spo2Chart.update();
             tempChart.update();

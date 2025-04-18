@@ -100,4 +100,36 @@ router.get('/room/:id', (req, res) => {
   res.render('client-room.njk', { room, patientInfo, medicines: patientInfo.medicines || [], hideNav: true });
 });
 
+// Add to the route handler that renders the dashboard
+router.get('/', (req, res) => {
+  const rooms = getRooms();
+  const vitals = getVitals();
+  
+  // Add vital status to each room
+  rooms.forEach(room => {
+    if (room.status === 'occupied' && vitals[room.id]) {
+      const latestVitals = getLatestVitals(vitals[room.id]);
+      if (latestVitals) {
+        room.vitalStatus = getVitalStatus(latestVitals);
+      }
+    }
+  });
+  
+  // Rest of your existing code
+});
+
+// Helper function to determine vital status
+function getVitalStatus(vitals) {
+  if (vitals.heartRate < 60 || vitals.heartRate > 100 || 
+      vitals.spo2 < 95 || 
+      vitals.temperature > 37.5) {
+    return 'critical';
+  } else if (vitals.heartRate < 65 || vitals.heartRate > 95 ||
+             vitals.spo2 < 97 ||
+             vitals.temperature > 37.2) {
+    return 'warning';
+  }
+  return 'normal';
+}
+
 module.exports = router;

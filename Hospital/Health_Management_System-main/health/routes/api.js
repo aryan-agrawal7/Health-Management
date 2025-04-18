@@ -88,35 +88,68 @@ router.post('/room/:id', express.json(), (req, res) => {
   }
 });
 
-// New helper: returns the latest reading (by the maximum index) as a unified object.
+// Update the getLatestVitals function to handle mixed data formats
 function getLatestVitals(roomVitals) {
-  if (!roomVitals.heartRate || Object.keys(roomVitals.heartRate).length === 0) return null;
+  if (!roomVitals) return null;
   
-  const keys = Object.keys(roomVitals.heartRate).map(Number);
-  const latestIndex = Math.max(...keys).toString();
+  // Find the last non-null heart rate value
+  let latestHeartRate = null;
+  for (let i = 5; i >= 1; i--) {
+    if (roomVitals.heartRate && roomVitals.heartRate[i] !== null) {
+      latestHeartRate = roomVitals.heartRate[i];
+      break;
+    }
+  }
+  
+  // Find the last non-null SpO2 value
+  let latestSpo2 = null;
+  for (let i = 5; i >= 1; i--) {
+    if (roomVitals.spo2 && roomVitals.spo2[i] !== null) {
+      latestSpo2 = roomVitals.spo2[i];
+      break;
+    }
+  }
+  
+  // Find the last non-null temperature value
+  let latestTemp = null;
+  for (let i = 5; i >= 1; i--) {
+    if (roomVitals.temp && roomVitals.temp[i] !== null) {
+      latestTemp = roomVitals.temp[i];
+      break;
+    }
+  }
   
   return {
-    heartRate: roomVitals.heartRate[latestIndex],
-    spo2: roomVitals.spo2[latestIndex],
-    temperature: roomVitals.temp[latestIndex]
+    heartRate: latestHeartRate,
+    spo2: latestSpo2,
+    temperature: latestTemp
   };
 }
 
-// New helper: returns an array of readings ordered from oldest (index 1) to newest.
+// Also update the getAllVitalsOrdered function to handle missing data
 function getAllVitalsOrdered(roomVitals) {
-  if (!roomVitals.heartRate) return [];
-  const count = Object.keys(roomVitals.heartRate).length;
+  if (!roomVitals) return [];
+  
+  // Find the maximum number of readings across all vital types
+  const heartRateKeys = roomVitals.heartRate ? Object.keys(roomVitals.heartRate).map(Number) : [];
+  const spo2Keys = roomVitals.spo2 ? Object.keys(roomVitals.spo2).map(Number) : [];
+  const tempKeys = roomVitals.temp ? Object.keys(roomVitals.temp).map(Number) : [];
+  
+  const allKeys = [...heartRateKeys, ...spo2Keys, ...tempKeys];
+  if (allKeys.length === 0) return [];
+  
+  const maxCount = Math.max(...allKeys);
   let vitalsArray = [];
-  for (let i = 1; i <= count; i++) {
+  
+  for (let i = 1; i <= maxCount; i++) {
     const key = i.toString();
-    if (roomVitals.heartRate[key] !== undefined && roomVitals.spo2[key] !== undefined && roomVitals.temp[key] !== undefined) {
-      vitalsArray.push({
-        heartRate: roomVitals.heartRate[key],
-        spo2: roomVitals.spo2[key],
-        temperature: roomVitals.temp[key]
-      });
-    }
+    vitalsArray.push({
+      heartRate: roomVitals.heartRate && roomVitals.heartRate[key] !== undefined ? roomVitals.heartRate[key] : 0,
+      spo2: roomVitals.spo2 && roomVitals.spo2[key] !== undefined ? roomVitals.spo2[key] : 0,
+      temperature: roomVitals.temp && roomVitals.temp[key] !== undefined ? roomVitals.temp[key] : 0
+    });
   }
+  
   return vitalsArray;
 }
 

@@ -17,12 +17,16 @@
     <div class="room-grid">
       {% for room in rooms %}
         {% if room.status === 'occupied' %}
-          <a href="/room/{{ room.id }}" class="room-card {{ room.status }}">
+          <a href="/room/{{ room.id }}" class="room-card {{ room.status }} {% if room.vitalStatus === 'critical' %}critical{% endif %}">
+            <div class="vital-status {% if room.vitalStatus %}{{ room.vitalStatus }}{% else %}normal{% endif %}"></div>
             <img src="/assets/bed.png" alt="Bed" class="bed-icon">
             <h3>Room {{ room.id }}</h3>
             <p>{{ room.status|title }}</p>
             {% if room.patient %}
               <p>{{ room.patient }}</p>
+            {% endif %}
+            {% if room.vitalStatus === 'critical' %}
+              <p class="vital-alert">⚠️ Abnormal Vitals</p>
             {% endif %}
           </a>
         {% else %}

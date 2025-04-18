@@ -6,13 +6,13 @@
   },
   {
     "id": 2,
-    "status": "vacant",
-    "patient": null
+    "status": "occupied",
+    "patient": "Aryan Agrawal"
   },
   {
     "id": 3,
-    "status": "vacant",
-    "patient": null
+    "status": "occupied",
+    "patient": "Aryan Agrawal"
   },
   {
     "id": 4,
@@ -26,8 +26,8 @@
   },
   {
     "id": 6,
-    "status": "occupied",
-    "patient": "naman"
+    "status": "vacant",
+    "patient": null
   },
   {
     "id": 7,

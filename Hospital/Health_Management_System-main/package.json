@@ -7,6 +7,7 @@
     "start": "node mqtt_vitals_updater.js"
   },
   "dependencies": {
+    "firebase": "^11.6.0",
     "mqtt": "^5.0.0"
   }
-} 
+}

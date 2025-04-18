@@ -46,7 +46,45 @@
         border-color: #f5c6cb;
         color: #721c24;
       }
-      
+
+      .alert-item.urgent {
+        background-color: #dc3545;
+        color: white;
+        border: 2px solid #721c24;
+        animation: urgentPulse 2s infinite;
+      }
+
+      @keyframes urgentPulse {
+        0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+        70% { box-shadow: 0 0 15px 5px rgba(220, 53, 69, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+      }
+
+      .emergency-actions {
+        margin-top: 12px;
+        margin-bottom: 10px;
+      }
+
+      .btn-urgent {
+        display: block;
+        background-color: #721c24;
+        color: white;
+        text-decoration: none;
+        padding: 12px 20px;
+        border-radius: 5px;
+        font-size: 1.2em;
+        font-weight: bold;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+      }
+
+      .btn-urgent:hover {
+        background-color: #ae1c27;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+      }
+
       .alert-timestamp {
         font-size: 0.8em;
         color: #6c757d;
@@ -86,6 +124,63 @@
       .sound-toggle input {
         margin-right: 10px;
       }
+
+      .vital-details {
+        margin-top: 5px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .vital-details span.critical {
+        color: #dc3545;
+        font-weight: bold;
+        font-size: 1.1em;
+        text-shadow: 0 0 3px rgba(220, 53, 69, 0.5);
+        padding: 3px 8px;
+        background-color: rgba(220, 53, 69, 0.2);
+        border-radius: 4px;
+      }
+
+      .btn-view {
+        display: inline-block;
+        background-color: #007bff;
+        color: white;
+        text-decoration: none;
+        padding: 5px 10px;
+        border-radius: 3px;
+        margin-top: 8px;
+      }
+
+      .btn-view:hover {
+        background-color: #0069d9;
+      }
+
+      /* Counter for unacknowledged urgent alerts */
+      #urgent-counter {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        z-index: 1000;
+        animation: shake 0.5s infinite;
+        display: none;
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+      }
     </style>
   </head>
   <body>
@@ -121,11 +216,48 @@
         const alertsContainer = document.getElementById('alerts-container');
         const alertItem = document.createElement('div');
         
+        // Extract room number if present
+        const roomMatch = message.match(/room (\d+)/i);
+        const roomId = roomMatch ? roomMatch[1] : null;
+        
         // Determine alert type
         if (message.includes('calling for nurse')) {
           alertItem.className = 'alert-item nurse-call';
+          alertItem.setAttribute('data-room', roomId);
         } else if (message.includes('Abnormal vitals')) {
-          alertItem.className = 'alert-item abnormal-vitals';
+          alertItem.className = 'alert-item abnormal-vitals urgent';
+          alertItem.setAttribute('data-room', roomId);
+          
+          // Extract vital values if available
+          const heartRateMatch = message.match(/HeartRate: (\d+\.?\d*)/);
+          const spo2Match = message.match(/SpO2: (\d+\.?\d*)/);
+          const tempMatch = message.match(/Temperature: (\d+\.?\d*)/);
+          
+          // Add specific vital details with styling
+          let vitalDetails = '<div class="vital-details">';
+          if (heartRateMatch) {
+            const hr = parseFloat(heartRateMatch[1]);
+            vitalDetails += `<span class="${hr < 60 || hr > 100 ? 'critical' : 'normal'}">HR: ${hr}</span>`;
+          }
+          if (spo2Match) {
+            const spo2 = parseFloat(spo2Match[1]);
+            vitalDetails += `<span class="${spo2 < 95 ? 'critical' : 'normal'}">SpO2: ${spo2}%</span>`;
+          }
+          if (tempMatch) {
+            const temp = parseFloat(tempMatch[1]);
+            vitalDetails += `<span class="${temp > 37.5 ? 'critical' : 'normal'}">Temp: ${temp}°C</span>`;
+          }
+          vitalDetails += '</div>';
+          
+          // Create prominent action button
+          const actionButtons = `
+            <div class="emergency-actions">
+              <a href="/room/${roomId}" class="btn btn-urgent">GO TO ROOM ${roomId} NOW</a>
+            </div>
+          `;
+          
+          // Add the vital details and action button to a variable to insert later
+          alertItem.extraContent = vitalDetails + actionButtons;
         } else {
           alertItem.className = 'alert-item';
         }
@@ -136,6 +268,7 @@
         alertItem.innerHTML = `
           <strong>${message}</strong>
           <span class="alert-timestamp">${timestamp}</span>
+          ${alertItem.extraContent || ''}
           <div class="alert-actions">
             <button class="btn btn-acknowledge">Acknowledge</button>
           </div>
@@ -150,10 +283,61 @@
           this.disabled = true;
           this.textContent = 'Acknowledged';
         });
+
+        // Add this after inserting the alert
+        updateUrgentCounter();
       });
       
       // Add a new sound file in public/sounds/alert.mp3
       // If the file doesn't exist, the sound won't play but the alerts will still show
+
+      // Add this to the script section after the socket connection is initialized
+      let originalTitle = document.title;
+      let titleInterval;
+
+      function startTitleAlert(count) {
+        clearInterval(titleInterval);
+        titleInterval = setInterval(() => {
+          document.title = document.title === originalTitle ? 
+            `⚠️ (${count}) URGENT ALERT!` : originalTitle;
+        }, 1000);
+      }
+
+      function stopTitleAlert() {
+        clearInterval(titleInterval);
+        document.title = originalTitle;
+      }
+
+      // Update the updateUrgentCounter function
+      function updateUrgentCounter() {
+        const urgentAlerts = document.querySelectorAll('.alert-item.urgent:not(.acknowledged)');
+        const counter = document.getElementById('urgent-counter');
+        
+        if (urgentAlerts.length > 0) {
+          counter.textContent = urgentAlerts.length;
+          counter.style.display = 'flex';
+          startTitleAlert(urgentAlerts.length);
+        } else {
+          counter.style.display = 'none';
+          stopTitleAlert();
+        }
+      }
+
+      // Update the acknowledge button click handler
+      document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('btn-acknowledge')) {
+          const alertItem = event.target.closest('.alert-item');
+          alertItem.style.opacity = '0.5';
+          alertItem.classList.add('acknowledged');
+          event.target.disabled = true;
+          event.target.textContent = 'Acknowledged';
+          
+          // Update counter after acknowledgment
+          updateUrgentCounter();
+        }
+      });
     </script>
+
+    <div id="urgent-counter">0</div>
   </body>
 </html>
