@@ -1,0 +1,194 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+  <div class="room-detail">
+    <div class="patient-info">
+      <h2>Room {{ room.id }} - {{ room.status|title }}</h2>      
+      <div style="margin-top: 1rem;">
+        <a href="/client/change-password?room_no={{ room.id }}" class="button secondary small">Change Password</a>
+      </div>
+      
+      <!-- Call Nurse button - More prominent -->
+      <div class="call-nurse-container">
+        <button id="callNurseBtn" class="call-nurse-button">CALL NURSE</button>
+        <div id="nurseCallStatus" class="nurse-call-status"></div>
+        <p class="nurse-info">Alerts will be sent to the nurse station dashboard</p>
+      </div>
+      
+      <div class="info-card">
+        <div class="card-header">
+          <h3>Patient Information</h3>
+          {# No edit/discharge buttons for client view #}
+        </div>
+        
+        <div id="patientDisplay">
+          <p><strong>Name:</strong> {{ patientInfo.name }}</p>
+          <p><strong>Gender:</strong> {{ patientInfo.gender|title }}</p>
+          <p><strong>Age:</strong> {{ patientInfo.age }}</p>
+          <p><strong>Admission Date:</strong> {{ patientInfo.admissionDate }}</p>
+          <p><strong>Diagnosis:</strong> {{ patientInfo.diagnosis }}</p>
+        </div>
+      </div>
+      
+      <div class="info-card">
+        <h3>Medications</h3>
+        <ul>
+          {% for med in medicines %}
+            <li>{{ med }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    
+    <div class="vitals">
+      <h3>Real-time Vital Signs</h3>
+      <div class="vital-cards">
+        <div class="vital-card">
+          <h4>Heart Rate</h4>
+          <p id="heartRate">--</p>
+          <span>bpm</span>
+        </div>
+        <div class="vital-card">
+          <h4>SpO2</h4>
+          <p id="spo2">--</p>
+          <span>%</span>
+        </div>
+        <div class="vital-card">
+          <h4>Temperature</h4>
+          <p id="temperature">--</p>
+          <span>°C</span>
+        </div>
+      </div>
+      
+      <div class="vital-charts">
+        <div class="vital-chart">
+          <h4>Heart Rate Trend</h4>
+          <canvas id="heartRateChart"></canvas>
+        </div>
+        <div class="vital-chart">
+          <h4>SpO2 Trend</h4>
+          <canvas id="spo2Chart"></canvas>
+        </div>
+        <div class="vital-chart">
+          <h4>Temperature Trend</h4>
+          <canvas id="temperatureChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/room.js"></script>
+  <script>
+    // Current room ID from the server-side template
+    const currentRoomId = "{{ room.id }}";
+    
+    // Initialize Socket.IO connection
+    const socket = io();
+    
+    // Call Nurse button logic
+    document.getElementById('callNurseBtn').addEventListener('click', function() {
+      const btn = this;
+      const statusDiv = document.getElementById('nurseCallStatus');
+      
+      // Disable button temporarily to prevent multiple clicks
+      btn.disabled = true;
+      btn.classList.add('calling');
+      
+      fetch('/client/nurse-alert', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ room_no: currentRoomId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if(data.success) {
+          statusDiv.textContent = 'Nurse has been alerted';
+          statusDiv.classList.add('success');
+          
+          // Re-enable the button after 5 seconds
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.classList.remove('calling');
+            
+            // Clear status after 3 more seconds
+            setTimeout(() => {
+              statusDiv.textContent = '';
+              statusDiv.classList.remove('success');
+            }, 3000);
+          }, 5000);
+        }
+      })
+      .catch(() => {
+        statusDiv.textContent = 'Failed to alert nurse. Try again.';
+        statusDiv.classList.add('error');
+        
+        // Re-enable the button after 2 seconds
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.classList.remove('calling');
+        }, 2000);
+      });
+    });
+  </script>
+  
+  <style>
+    .call-nurse-container {
+      margin: 20px 0;
+      text-align: center;
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      border: 2px solid #d9534f;
+    }
+    
+    .call-nurse-button {
+      background-color: #d9534f;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 15px 30px;
+      font-size: 1.2em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .call-nurse-button:hover {
+      background-color: #c9302c;
+      transform: scale(1.05);
+    }
+    
+    .call-nurse-button:active {
+      transform: scale(0.98);
+    }
+    
+    .call-nurse-button.calling {
+      background-color: #5cb85c;
+      opacity: 0.7;
+    }
+    
+    .nurse-call-status {
+      margin-top: 10px;
+      min-height: 24px;
+      font-weight: bold;
+    }
+    
+    .nurse-call-status.success {
+      color: #5cb85c;
+    }
+    
+    .nurse-call-status.error {
+      color: #d9534f;
+    }
+    
+    .nurse-info {
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: #6c757d;
+    }
+  </style>
+{% endblock %}

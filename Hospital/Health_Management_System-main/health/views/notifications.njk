@@ -1,0 +1,167 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+  <div class="container">
+    <h2>System Notifications</h2>
+    
+    <div class="filter-controls">
+      <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search notifications...">
+      </div>
+      <div class="filter-buttons">
+        <button class="btn filter-btn active" data-filter="all">All</button>
+        <button class="btn filter-btn" data-filter="nurse-call">Nurse Calls</button>
+        <button class="btn filter-btn" data-filter="vital-alert">Vital Alerts</button>
+        <button class="btn filter-btn" data-filter="system">System</button>
+      </div>
+    </div>
+    
+    <div class="notifications-list">
+      <table id="notificationsTable">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Type</th>
+            <th>Message</th>
+            <th>Room</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for notification in notifications %}
+          <tr class="notification-item {{ notification.type }}">
+            <td>{{ notification.timestamp|date }}</td>
+            <td>{{ notification.type }}</td>
+            <td>{{ notification.message }}</td>
+            <td>{{ notification.roomId }}</td>
+            <td>{{ notification.status }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    
+    {% if notifications.length === 0 %}
+    <div class="empty-state">
+      <p>No notifications found</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Search functionality
+      const searchInput = document.getElementById('searchInput');
+      searchInput.addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#notificationsTable tbody tr');
+        
+        rows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+      });
+      
+      // Filter functionality
+      const filterButtons = document.querySelectorAll('.filter-btn');
+      filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const filterValue = this.getAttribute('data-filter');
+          
+          // Update active button
+          filterButtons.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Filter the table
+          const rows = document.querySelectorAll('#notificationsTable tbody tr');
+          rows.forEach(row => {
+            if (filterValue === 'all') {
+              row.style.display = '';
+            } else {
+              row.style.display = row.classList.contains(filterValue) ? '' : 'none';
+            }
+          });
+        });
+      });
+    });
+  </script>
+  
+  <style>
+    .filter-controls {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .filter-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .filter-btn {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      background: #f5f5f5;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    
+    .filter-btn.active {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    
+    .notifications-list {
+      margin-top: 20px;
+    }
+    
+    .search-container {
+      width: 300px;
+    }
+    
+    #searchInput {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #777;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    th {
+      background-color: #f5f5f5;
+    }
+    
+    tr:hover {
+      background-color: #f9f9f9;
+    }
+    
+    .notification-item.nurse-call {
+      background-color: #d4edda;
+    }
+    
+    .notification-item.vital-alert {
+      background-color: #f8d7da;
+    }
+    
+    .notification-item.system {
+      background-color: #e2e3e5;
+    }
+  </style>
+{% endblock %}

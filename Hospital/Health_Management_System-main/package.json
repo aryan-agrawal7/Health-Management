@@ -1,0 +1,12 @@
+{
+  "name": "mqtt-vitals-updater",
+  "version": "1.0.0",
+  "description": "MQTT client to update patient vitals data",
+  "main": "mqtt_vitals_updater.js",
+  "scripts": {
+    "start": "node mqtt_vitals_updater.js"
+  },
+  "dependencies": {
+    "mqtt": "^5.0.0"
+  }
+} 

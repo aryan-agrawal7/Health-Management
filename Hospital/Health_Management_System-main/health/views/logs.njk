@@ -1,0 +1,66 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+  <div class="logs-container">
+    <div class="logs-header">
+      <h2>Patient Activity Logs</h2>
+    </div>
+    
+    <div class="log-filters">
+      <div class="form-group">
+        <label for="actionFilter">Filter by Action</label>
+        <select id="actionFilter">
+          <option value="all">All Actions</option>
+          <option value="add">Admissions</option>
+          <option value="edit">Updates</option>
+          <option value="discharge">Discharges</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="logs-list">
+      <table id="logsTable" class="styled-table">
+        <thead>
+          <tr>
+            <th>Date/Time</th>
+            <th>Action</th>
+            <th>Patient</th>
+            <th>Room</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+            <tr data-action="{{ log.action }}">
+              <td>{{ log.timestamp }}</td>
+              <td>
+                <span class="log-badge {{ log.action }}">
+                  {% if log.action === 'add' %}
+                    Admission
+                  {% elif log.action === 'edit' %}
+                    Update
+                  {% elif log.action === 'discharge' %}
+                    Discharge
+                  {% else %}
+                    {{ log.action }}
+                  {% endif %}
+                </span>
+              </td>
+              <td>{{ log.patientName }}</td>
+              <td>Room {{ log.roomId }}</td>
+              <td>{{ log.details }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      
+      {% if logs.length === 0 %}
+        <div class="empty-state">
+          <p>No activity logs found.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  
+  <script src="/js/logs.js"></script>
+{% endblock %}

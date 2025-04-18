@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "timestamp": "2025-04-10T09:51:02.092Z",
+    "message": "Patient in room 5 is calling for nurse",
+    "type": "nurse-call",
+    "roomId": "5",
+    "status": "unread"
+  },
+  {
+    "id": 2,
+    "timestamp": "2025-04-10T09:51:09.431Z",
+    "message": "Patient in room 5 is calling for nurse",
+    "type": "nurse-call",
+    "roomId": "5",
+    "status": "unread"
+  },
+  {
+    "id": 3,
+    "timestamp": "2025-04-10T09:51:19.587Z",
+    "message": "Patient in room 5 is calling for nurse",
+    "type": "nurse-call",
+    "roomId": "5",
+    "status": "unread"
+  },
+  {
+    "id": 4,
+    "timestamp": "2025-04-10T09:52:09.845Z",
+    "message": "Patient in room 6 is calling for nurse",
+    "type": "nurse-call",
+    "roomId": "6",
+    "status": "unread"
+  },
+  {
+    "id": 5,
+    "timestamp": "2025-04-10T09:52:15.471Z",
+    "message": "Patient in room 6 is calling for nurse",
+    "type": "nurse-call",
+    "roomId": "6",
+    "status": "unread"
+  },
+  {
+    "id": 6,
+    "timestamp": "2025-04-10T09:52:23.057Z",
+    "message": "Patient in room 6 is calling for nurse",
+    "type": "nurse-call",
+    "roomId": "6",
+    "status": "unread"
+  },
+  {
+    "id": 7,
+    "timestamp": "2025-04-10T09:52:30.766Z",
+    "message": "Patient in room 6 is calling for nurse",
+    "type": "nurse-call",
+    "roomId": "6",
+    "status": "unread"
+  },
+  {
+    "id": 8,
+    "timestamp": "2025-04-10T10:00:10.158Z",
+    "message": "Patient in room 5 is calling for nurse",
+    "type": "nurse-call",
+    "roomId": "5",
+    "status": "unread"
+  },
+  {
+    "id": 9,
+    "timestamp": "2025-04-18T07:31:01.645Z",
+    "message": "Patient in room 1 is calling for nurse",
+    "type": "nurse-call",
+    "roomId": "1",
+    "status": "unread"
+  }
+]

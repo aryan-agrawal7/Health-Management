@@ -1,0 +1,159 @@
+<html>
+  <head>
+    <title>Hospital Monitoring System - Nurse Station</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      
+      h2 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+      }
+      
+      #alerts {
+        margin: 20px 0;
+        padding: 0;
+      }
+      
+      .alert-item {
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 4px;
+        color: #721c24;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        animation: fadeIn 0.5s;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .alert-item.nurse-call {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+      }
+      
+      .alert-item.abnormal-vitals {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+      }
+      
+      .alert-timestamp {
+        font-size: 0.8em;
+        color: #6c757d;
+        margin-left: 10px;
+      }
+      
+      .alert-actions {
+        margin-top: 10px;
+      }
+      
+      .btn {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        margin-right: 5px;
+        font-size: 0.9em;
+      }
+      
+      .btn-acknowledge {
+        background-color: #007bff;
+        color: white;
+      }
+      
+      .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      
+      .sound-toggle {
+        display: flex;
+        align-items: center;
+      }
+      
+      .sound-toggle input {
+        margin-right: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header-actions">
+      <h2>Hospital Monitoring System - Nurse Station</h2>
+      <div class="sound-toggle">
+        <input type="checkbox" id="enableSound" checked>
+        <label for="enableSound">Enable Alert Sounds</label>
+      </div>
+    </div>
+    
+    <div id="alerts">
+      <h3>Alerts Dashboard</h3>
+      <p>Access this dashboard at: <code>http://localhost:3000/nurse-station</code></p>
+      <div id="alerts-container"></div>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      // Sound for alerts
+      const alertSound = new Audio('/sounds/alert.mp3');
+      
+      // Initialize Socket.IO connection
+      const socket = io();
+      
+      socket.on('alert', function(message) {
+        // Play sound if enabled
+        if (document.getElementById('enableSound').checked) {
+          alertSound.play().catch(e => console.log('Error playing sound:', e));
+        }
+        
+        // Add the alert to the container
+        const alertsContainer = document.getElementById('alerts-container');
+        const alertItem = document.createElement('div');
+        
+        // Determine alert type
+        if (message.includes('calling for nurse')) {
+          alertItem.className = 'alert-item nurse-call';
+        } else if (message.includes('Abnormal vitals')) {
+          alertItem.className = 'alert-item abnormal-vitals';
+        } else {
+          alertItem.className = 'alert-item';
+        }
+        
+        const timestamp = new Date().toLocaleTimeString();
+        
+        // Create alert content
+        alertItem.innerHTML = `
+          <strong>${message}</strong>
+          <span class="alert-timestamp">${timestamp}</span>
+          <div class="alert-actions">
+            <button class="btn btn-acknowledge">Acknowledge</button>
+          </div>
+        `;
+        
+        // Add new alert at the top
+        alertsContainer.insertBefore(alertItem, alertsContainer.firstChild);
+        
+        // Set up event listener for the acknowledge button
+        alertItem.querySelector('.btn-acknowledge').addEventListener('click', function() {
+          alertItem.style.opacity = '0.5';
+          this.disabled = true;
+          this.textContent = 'Acknowledged';
+        });
+      });
+      
+      // Add a new sound file in public/sounds/alert.mp3
+      // If the file doesn't exist, the sound won't play but the alerts will still show
+    </script>
+  </body>
+</html>

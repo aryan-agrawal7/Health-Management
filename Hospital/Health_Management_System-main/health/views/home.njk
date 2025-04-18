@@ -1,0 +1,41 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+  <div class="dashboard">
+    
+    <div class="stats">
+      <div class="stat-card">
+        <h3>Occupied Rooms</h3>
+        <p>{{ occupiedCount }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Vacant Rooms</h3>
+        <p>{{ vacantCount }}</p>
+      </div>
+    </div>
+    
+    <div class="room-grid">
+      {% for room in rooms %}
+        {% if room.status === 'occupied' %}
+          <a href="/room/{{ room.id }}" class="room-card {{ room.status }}">
+            <img src="/assets/bed.png" alt="Bed" class="bed-icon">
+            <h3>Room {{ room.id }}</h3>
+            <p>{{ room.status|title }}</p>
+            {% if room.patient %}
+              <p>{{ room.patient }}</p>
+            {% endif %}
+          </a>
+        {% else %}
+          <div class="room-card {{ room.status }}">
+            <img src="/assets/bed.png" alt="Bed" class="bed-icon">
+            <h3>Room {{ room.id }}</h3>
+            <p>{{ room.status|title }}</p>
+            {% if room.patient %}
+              <p>{{ room.patient }}</p>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

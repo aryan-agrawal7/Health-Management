@@ -1,0 +1,142 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+  <div class="room-detail">
+    <div class="patient-info">
+      <h2>Room {{ room.id }} - {{ room.status|title }}</h2>
+      
+      <div class="info-card">
+        <div class="card-header">
+          <h3>Patient Information</h3>
+          {% if room.status === 'occupied' %}
+            <div>
+              <button id="editPatientBtn" class="button small">Edit</button>
+              <button id="dischargePatientBtn" class="button small danger">Discharge</button>
+            </div>
+          {% endif %}
+        </div>
+        
+        <div id="patientDisplay">
+          <p><strong>Name:</strong> {{ patientInfo.name }}</p>
+          <p><strong>Gender:</strong> {{ patientInfo.gender|title }}</p>
+          <p><strong>Age:</strong> {{ patientInfo.age }}</p>
+          <p><strong>Admission Date:</strong> {{ patientInfo.admissionDate }}</p>
+          <p><strong>Diagnosis:</strong> {{ patientInfo.diagnosis }}</p>
+        </div>
+        
+        <div id="patientForm" style="display: none;">
+          <form id="editPatientForm" method="POST" action="/room/{{ room.id }}/update">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" value="{{ patientInfo.name }}" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="gender">Gender</label>
+              <select id="gender" name="gender" required>
+                <option value="male" {% if patientInfo.gender == 'male' %}selected{% endif %}>Male</option>
+                <option value="female" {% if patientInfo.gender == 'female' %}selected{% endif %}>Female</option>
+                <option value="other" {% if patientInfo.gender == 'other' %}selected{% endif %}>Other</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="age">Age</label>
+              <input type="number" id="age" name="age" value="{{ patientInfo.age }}" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="admissionDate">Admission Date</label>
+              <input type="date" id="admissionDate" name="admissionDate" value="{{ patientInfo.admissionDate }}" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="diagnosis">Diagnosis</label>
+              <input type="text" id="diagnosis" name="diagnosis" value="{{ patientInfo.diagnosis }}" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="medicines">Medications (comma separated)</label>
+              <input type="text" id="medicines" name="medicines" value="{{ medicines|join(', ') }}">
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" id="cancelEditBtn" class="button secondary">Cancel</button>
+              <button type="submit" class="button primary">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div class="info-card">
+        <h3>Medications</h3>
+        <ul>
+          {% for med in medicines %} 
+            <li>{{ med }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    
+    <div class="vitals">
+      <h3>Real-time Vital Signs</h3>
+      <div class="vital-cards">
+        <div class="vital-card">
+          <h4>Heart Rate</h4>
+          <p id="heartRate">--</p>
+          <span>bpm</span>
+        </div>
+        <div class="vital-card">
+          <h4>SpO2</h4>
+          <p id="spo2">--</p>
+          <span>%</span>
+        </div>
+        <div class="vital-card">
+          <h4>Temperature</h4>
+          <p id="temperature">--</p>
+          <span>°C</span>
+        </div>
+      </div>
+      
+      <div class="vital-charts">
+        <div class="vital-chart">
+          <h4>Heart Rate Trend</h4>
+          <canvas id="heartRateChart"></canvas>
+        </div>
+        <div class="vital-chart">
+          <h4>SpO2 Trend</h4>
+          <canvas id="spo2Chart"></canvas>
+        </div>
+        <div class="vital-chart">
+          <h4>Temperature Trend</h4>
+          <canvas id="temperatureChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="dischargeModal" class="modal">
+    <div class="modal-content">
+      <h3>Discharge Patient</h3>
+      <p>Are you sure you want to discharge this patient?</p>
+      <form id="dischargeForm" method="POST" action="/room/{{ room.id }}/discharge">
+        <div class="form-group">
+          <label for="dischargeReason">Reason</label>
+          <select id="dischargeReason" name="reason" required>
+            <option value="cured">Patient Cured</option>
+            <option value="deceased">Patient Deceased</option>
+            <option value="transferred">Transferred to Another Facility</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" id="cancelDischargeBtn" class="button secondary">Cancel</button>
+          <button type="submit" class="button danger">Confirm Discharge</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <script src="/js/room.js"></script>
+  <script src="/js/patient-edit.js"></script>
+  <script src="/js/patient-discharge.js"></script>
+{% endblock %}

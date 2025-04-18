@@ -1,0 +1,28 @@
+{
+  "1": {
+    "name": "pranav",
+    "age": 21,
+    "gender": "other",
+    "admissionDate": "2025-04-10",
+    "diagnosis": "12345",
+    "medicines": [
+      "a",
+      "q",
+      "b",
+      "w"
+    ]
+  },
+  "6": {
+    "name": "naman",
+    "age": 18,
+    "gender": "male",
+    "admissionDate": "2025-04-10",
+    "diagnosis": "qwerty",
+    "medicines": [
+      "a",
+      "b",
+      "c",
+      "d"
+    ]
+  }
+}
